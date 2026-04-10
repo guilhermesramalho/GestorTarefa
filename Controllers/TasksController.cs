@@ -83,7 +83,7 @@ namespace GestorTarefa.Controllers
         public async Task<IActionResult> ByPeriodo([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] int? page, [FromQuery] int? pageSize)
         {
             _logger.LogInformation("GET /api/task/periodo - start={Start} end={End} page={Page} pageSize={PageSize}", startDate, endDate, page, pageSize);
-
+            _logger.LogInformation("GET /api/task/periodo - start={Start} end={End} page={Page} pageSize={PageSize}", startDate, endDate, page, pageSize);
             if (!startDate.HasValue || !endDate.HasValue)
                 return BadRequest(new { message = "startDate and endDate are required." });
 

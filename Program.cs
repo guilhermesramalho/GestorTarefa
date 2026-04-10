@@ -3,13 +3,12 @@ using GestorTarefa.Infrastructure.Repositories;
 using GestorTarefa.Application.Interfaces;
 using GestorTarefa.Application.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog for structured JSON logging
+
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console(new RenderedCompactJsonFormatter())
@@ -17,12 +16,12 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Add services to the container.
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure DbContext (PostgreSQL)
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
                        ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
@@ -32,7 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// DI registrations (Scoped)
+
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<GestorTarefa.Application.Interfaces.ITaskService, GestorTarefa.Application.Services.TaskService>();
@@ -40,7 +39,7 @@ builder.Services.AddScoped<DbSeeder>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -53,7 +52,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Try to apply migrations and seed database (with retries for Docker/Postgres readiness)
+
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
