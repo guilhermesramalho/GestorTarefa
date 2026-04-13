@@ -40,7 +40,7 @@ jobs:
         run: dotnet build ./Application/GestorTarefa.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test ./tests --no-build --configuration Release --verbosity normal
+        run: dotnet test ./Test --no-build --configuration Release --verbosity normal
 
       - name: Check for Kubernetes manifests
         id: check_manifests
