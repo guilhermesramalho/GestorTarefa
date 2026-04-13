@@ -102,8 +102,11 @@ namespace GestorTarefa.Application.Services
         // New method for interface
         public async Task<PagedResult<TaskDto>> GetTasksByPeriodAsync(DateTime startDate, DateTime endDate, int page, int pageSize)
         {
-            // validations can be kept at service or controller level; just execute repository method
+            if (startDate > endDate)
+                throw new ArgumentException("startDate must be earlier than or equal to endDate.", nameof(startDate));
+
             var (data, total) = await _repository.GetByPeriodAsync(startDate, endDate, page, pageSize);
+            
             var dtos = data.Select(x => MapToDto(x));
             return new PagedResult<TaskDto>
             {

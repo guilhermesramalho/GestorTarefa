@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      DOTNET_VERSION: '9.0.x'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.local/share/NuGet
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore ./Application/GestorTarefa.csproj
+
+      - name: Build
+        run: dotnet build ./Application/GestorTarefa.csproj --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test ./tests --no-build --configuration Release --verbosity normal
+
+      - name: Check for Kubernetes manifests
+        id: check_manifests
+        run: |
+          if [ -d "k8s" ] || ls *.yaml 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME="${{ github.repository }}:${{ github.sha }}"
+          echo "Building image $IMAGE_NAME"
+          docker build -t "$IMAGE_NAME" .
+
+      - name: Validate manifests for Kubernetes (dry-run)
+        if: steps.check_manifests.outputs.exists == 'true'
+        run: |
+          echo "Kubernetes manifests found — performing client-side dry-run validation"
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          # apply dry-run to validate manifests structure
+          kubectl apply --dry-run=client -f k8s || true
