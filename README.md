@@ -54,3 +54,9 @@ Criar novas migrations (desenvolvimento):
 
 Observação:
 - Não crie migrations em runtime dentro do container. A aplicação no container apenas aplica (`Database.Migrate()`), não cria migrations.
+
+CI (GitHub Actions):
+- Foi adicionado o workflow `/.github/workflows/ci.yml` que executa build, testes e gera a imagem Docker (`ghcr.io/<repo>:<sha>`). O pipeline dispara em `push` e `pull_request` para a branch `develop`.
+
+Power BI:
+- Na pasta `PowerBI` existe o arquivo `controleTarefas.pbix` (arquivo para importação no Power BI). Contém um dashboard simples para visualização de atividades e métricas de tarefas.
