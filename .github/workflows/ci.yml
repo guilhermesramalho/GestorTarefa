@@ -53,7 +53,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_NAME="${{ github.repository }}:${{ github.sha }}"
+          IMAGE_NAME="${{ toLower(github.repository) }}:${{ github.sha }}"
           echo "Building image $IMAGE_NAME"
           docker build -t "$IMAGE_NAME" .
 
